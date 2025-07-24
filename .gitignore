@@ -3,3 +3,4 @@ anaconda_projects/*
 .ipynb_checkpoints/*
 .env
 quick.py
+temp.py
