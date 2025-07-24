@@ -1,6 +1,6 @@
 import subprocess
 import time
-msg = input("Commit message (no): ")
+msg = input("Commit message: ")
 
 commands = [
     "pip freeze > requirements.txt",
@@ -10,5 +10,5 @@ commands = [
 ]
 
 for cmd in commands:
-    subprocess.run(cmd, shell=True)
     time.sleep(3)
+    subprocess.run(cmd, shell=True)
