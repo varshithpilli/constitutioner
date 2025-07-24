@@ -1,4 +1,4 @@
-import requests
+from httpx import post
 import os
 from dotenv import load_dotenv
 
@@ -6,7 +6,7 @@ load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
 
-base_url = "https://openrouter.ai/api/v1/chat/completions"
+base_url = os.getenv("BASE_URL")
 
 payload = {
     "model": "qwen/qwen3-coder:free",
@@ -17,12 +17,13 @@ payload = {
         }
     ]
 }
+
 headers = {
     "Authorization": f"Bearer {API_KEY}",
     "Content-Type": "application/json"
 }
 
-response = requests.post(base_url, json=payload, headers=headers).json()
+response = post(base_url, json=payload, headers=headers).json()
 
 result = response["choices"][0]["message"]["content"]
 
