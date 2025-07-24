@@ -9,15 +9,18 @@ import numpy as np
 
 load_dotenv()
 
+def print_header(title):
+    print("\n" + "="*60)
+    print(f"{title.upper()}")
+    print("="*60 + "\n")
+
+
 API_KEY = os.getenv("API_KEY")
-
 BASE_URL = os.getenv("BASE_URL")
-
 MODEL = os.getenv("MODEL")
 
 class Constitutioner:
     def __init__(self):
-
         self.api_key = API_KEY
         self.base_url = BASE_URL
         self.model = MODEL
@@ -27,6 +30,7 @@ class Constitutioner:
         self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
     
     def processing_pdfs(self):
+        print_header("Processing PDF")
         try:
             with open(self.file_path, 'rb') as file:
                 reader = PyPDF2.PdfReader(file)
@@ -38,28 +42,32 @@ class Constitutioner:
             print(f"Something happened mf: {e}")
             return ""
         
+        print_header("Cleaning Extracted Text")
         contents = re.sub(r'\s+', ' ', contents.strip())
         contents = re.sub(r'[^\w\s.,!?()-]', '', contents)
 
         chunk_size = 1000
         overlap = 200
 
+        print_header("Chunking Text")
         words = contents.split()
         for i in range(0, len(words), chunk_size - overlap):
             chunk = ' '.join(words[i:i + chunk_size])
             if chunk.strip():
                 self.chunks.append(chunk)
 
+        print_header("Generating Embeddings")
         self.embeddings = np.array(self.embedder.encode(self.chunks))
 
     def get_chunks(self, query, top_k = 5):
+        print_header("Embedding Query and Retrieving Relevant Chunks")
         query_embedding = self.embedder.encode(query)
-        similarities = cosine_similarity(query_embedding, self.embeddings)[0]
+        similarities = cosine_similarity([query_embedding], self.embeddings)[0]
         top_indices = np.argsort(similarities)[-top_k:][::-1]
         relevant_docs = []
         for idx in top_indices:
             if similarities[idx] > 0.1:
-                relevant_docs.append(self.documents[idx])
+                relevant_docs.append(self.chunks[idx])
         return relevant_docs
     
     def system_prompt(self):
@@ -119,14 +127,13 @@ class Constitutioner:
     def user_prompt(self, query, docs):
         context = "\n\n".join(docs)
 
-        prompt = f"""Based on the following official Indian Constitution snippets:
+        return f"""Based on the following official Indian Constitution snippets:
             CONTEXT:
             {context}
 
             USER QUERY:
             {query}
         """
-
 
     def api_call(self, messages):
         headers = {
@@ -140,10 +147,14 @@ class Constitutioner:
         }
 
         try:
+            print_header("Calling the LLM API")
             response = post(self.base_url, json=payload, headers=headers)
             response.raise_for_status()
             result = response.json()
+
+            print_header("Received Response")
             return result['choices'][0]['message']['content']
+        
         except Exception as e:
             print(f"api call failed mf: {e}")
             return None
@@ -151,6 +162,7 @@ class Constitutioner:
     def inference(self, query):
         self.processing_pdfs()
         docs = self.get_chunks(query)
+        print_header("Preparing User Prompt")
         messages = [
             {"role": "system", "content": self.system_prompt()},
             {"role": "user", "content": self.user_prompt(query, docs)}
@@ -159,10 +171,29 @@ class Constitutioner:
         return response
 
 def main():
+    print_header("Initializing Constitutioner")
     trial01 = Constitutioner()
-    question = input("Enter your query: ")
-    response = trial01.inference(question)
-    print(response)
-    
+    while True:
+        question = input("Enter your query: ")
+        if question.lower() in ["exit", "stop", "quit", "leave", "end", ""]:
+            print_header("Exiting Constitutioner")
+            break
+        response = trial01.inference(question)
+        print(response)
+
+def print_banner():
+    print(r"""
+   _____                _   _ _         _   _                       
+  / ____|              | | (_) |       | | (_)                      
+ | |     ___  _ __  ___| |_ _| |_ _   _| |_ _  ___  _ __   ___ _ __ 
+ | |    / _ \| '_ \/ __| __| | __| | | | __| |/ _ \| '_ \ / _ \ '__|
+ | |___| (_) | | | \__ \ |_| | |_| |_| | |_| | (_) | | | |  __/ |   
+  \_____\___/|_| |_|___/\__|_|\__|\__,_|\__|_|\___/|_| |_|\___|_|   
+                                                                    
+            🇮🇳  AI Assistant for the Indian Constitution 🇮🇳
+""")
+
+
 if __name__ == "__main__":
+    print_banner()
     main()
