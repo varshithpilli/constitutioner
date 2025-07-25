@@ -4,3 +4,5 @@ anaconda_projects/*
 .env
 quick.py
 temp.py
+*/*.pyc
+quick.py

@@ -1,11 +1,7 @@
 from httpx import post
 import os
 from dotenv import load_dotenv
-import PyPDF2
-import re
-from sentence_transformers import SentenceTransformer
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
+from web_based.infere import get_chunks
 
 load_dotenv()
 
@@ -24,52 +20,7 @@ class Constitutioner:
         self.api_key = API_KEY
         self.base_url = BASE_URL
         self.model = MODEL
-        self.file_path = "files/header_removed.pdf"
-        self.chunks = []
-        self.embeddings = np.array([])
-        self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
-    
-    def processing_pdfs(self):
-        print_header("Processing PDF")
-        try:
-            with open(self.file_path, 'rb') as file:
-                reader = PyPDF2.PdfReader(file)
-                contents = ""
-                for page in reader.pages:
-                    contents += page.extract_text() + "\n\n"
-
-        except Exception as e:
-            print(f"Something happened mf: {e}")
-            return ""
         
-        print_header("Cleaning Extracted Text")
-        contents = re.sub(r'\s+', ' ', contents.strip())
-        contents = re.sub(r'[^\w\s.,!?()-]', '', contents)
-
-        chunk_size = 1000
-        overlap = 200
-
-        print_header("Chunking Text")
-        words = contents.split()
-        for i in range(0, len(words), chunk_size - overlap):
-            chunk = ' '.join(words[i:i + chunk_size])
-            if chunk.strip():
-                self.chunks.append(chunk)
-
-        print_header("Generating Embeddings")
-        self.embeddings = np.array(self.embedder.encode(self.chunks))
-
-    def get_chunks(self, query, top_k = 5):
-        print_header("Embedding Query and Retrieving Relevant Chunks")
-        query_embedding = self.embedder.encode(query)
-        similarities = cosine_similarity([query_embedding], self.embeddings)[0]
-        top_indices = np.argsort(similarities)[-top_k:][::-1]
-        relevant_docs = []
-        for idx in top_indices:
-            if similarities[idx] > 0.1:
-                relevant_docs.append(self.chunks[idx])
-        return relevant_docs
-    
     def system_prompt(self):
         return """
         You are **NyayaGPT**, an AI assistant created to help the people of India understand their rights and responsibilities under the Indian Constitution.
@@ -147,12 +98,11 @@ class Constitutioner:
         }
 
         try:
-            print_header("Calling the LLM API")
+            print_header("LLM CALL HAPPENING...")
             response = post(self.base_url, json=payload, headers=headers)
             response.raise_for_status()
             result = response.json()
 
-            print_header("Received Response")
             return result['choices'][0]['message']['content']
         
         except Exception as e:
@@ -160,9 +110,7 @@ class Constitutioner:
             return None
         
     def inference(self, query):
-        self.processing_pdfs()
-        docs = self.get_chunks(query)
-        print_header("Preparing User Prompt")
+        docs = get_chunks(query)
         messages = [
             {"role": "system", "content": self.system_prompt()},
             {"role": "user", "content": self.user_prompt(query, docs)}
@@ -171,7 +119,6 @@ class Constitutioner:
         return response
 
 def main():
-    print_header("Initializing Constitutioner")
     trial01 = Constitutioner()
     while True:
         question = input("Enter your query: ")

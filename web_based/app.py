@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
-from .const_model import Constitutioner
+from .deploy_model import Constitutioner
 
 app = FastAPI()
 
