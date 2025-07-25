@@ -1,0 +1,2 @@
+read operation timed out: no idea
+too many requests: change API key
