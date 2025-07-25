@@ -3,9 +3,9 @@ import os
 from dotenv import load_dotenv
 import PyPDF2
 import re
-from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 load_dotenv()
 
@@ -26,7 +26,7 @@ class Constitutioner:
         self.model = MODEL
         self.file_path = "files/header_removed.pdf"
         self.chunks = []
-        self.chunk_embeddings = np.array([])
+        self.embeddings = np.array([])
         self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
     
     def processing_pdfs(self):
