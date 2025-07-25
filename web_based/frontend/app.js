@@ -16,6 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
   function appendMessage(text, sender = 'user') {
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${sender}`;
@@ -44,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     chatMessages.appendChild(msgDiv);
     if (copyBtn) chatMessages.appendChild(copyBtn);
+    scrollToBottom();
     return msgDiv;
   }
 
@@ -80,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         };
       }
+      scrollToBottom();
     } catch (err) {
       typingMsg.querySelector('.bot-text').textContent = 'Sorry, there was an error getting a response.';
       const nextBtn = typingMsg.nextElementSibling;
@@ -95,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         };
       }
+      scrollToBottom();
     } finally {
       isProcessing = false;
       setInputEnabled(true);
