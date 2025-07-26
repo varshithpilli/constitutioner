@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from .infere import get_chunks
 import requests
+import json
 
 load_dotenv()
 
@@ -89,27 +90,40 @@ class Constitutioner:
         payload = {
             "model": self.model,
             "messages": messages,
-            "max_tokens": 1500,
+            "stream": True
         }
 
-        try:
-            response = post(self.base_url, json=payload, headers=headers)
-            response.raise_for_status()
-            result = response.json()
+        buffer = ""
+        with requests.post(self.base_url, headers=headers, json=payload, stream=True) as r:
+            for chunk in r.iter_content(chunk_size=1024, decode_unicode=True):
+                buffer += chunk
+                while True:
+                    line_end = buffer.find('\n')
+                    if line_end == -1:
+                        break
 
-            return result['choices'][0]['message']['content']
-        
-        except Exception as e:
-            print(f"api call failed mf: {e}")
-            return None
-        
+                    line = buffer[:line_end].strip()
+                    buffer = buffer[line_end + 1:]
+
+                    if line.startswith('data: '):
+                        data = line[6:]
+                        if data == '[DONE]':
+                            return
+
+                        try:
+                            data_obj = json.loads(data)
+                            content = data_obj["choices"][0]["delta"].get("content")
+                            if content:
+                                yield content
+                        except json.JSONDecodeError:
+                            pass        
+                        
     def inference(self, query):
         docs = get_chunks(query)
-        if not docs:
+        if docs is None:
             return None
         messages = [
             {"role": "system", "content": self.system_prompt()},
             {"role": "user", "content": self.user_prompt(query, docs)}
         ]
-        response = self.api_call(messages)
-        return response
+        yield from self.api_call(messages)

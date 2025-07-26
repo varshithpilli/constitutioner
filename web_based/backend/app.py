@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
-from .temp_deploy import Constitutioner
+from .deploy_model import Constitutioner
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
