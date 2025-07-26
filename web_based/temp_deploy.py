@@ -1,17 +1,11 @@
 from httpx import post
 import os
 from dotenv import load_dotenv
-from web_based.infere import get_chunks
-import json
+from .infere import get_chunks
 import requests
+import json
 
 load_dotenv()
-
-def print_header(title):
-    print("\n" + "="*60)
-    print(f"{title.upper()}")
-    print("="*60 + "\n")
-
 
 API_KEY = os.getenv("API_KEY")
 BASE_URL = os.getenv("BASE_URL")
@@ -22,7 +16,7 @@ class Constitutioner:
         self.api_key = API_KEY
         self.base_url = BASE_URL
         self.model = MODEL
-        
+
     def system_prompt(self):
         return """
         You are **NyayaGPT**, an AI assistant created to help the people of India understand their rights and responsibilities under the Indian Constitution.
@@ -122,9 +116,8 @@ class Constitutioner:
                             if content:
                                 yield content
                         except json.JSONDecodeError:
-                            pass
-
-            
+                            pass        
+                        
     def inference(self, query):
         docs = get_chunks(query)
         if docs is None:
@@ -133,40 +126,5 @@ class Constitutioner:
             {"role": "system", "content": self.system_prompt()},
             {"role": "user", "content": self.user_prompt(query, docs)}
         ]
-        response_chunks = self.api_call(messages)
+        yield from self.api_call(messages)
 
-        full_response = ""
-        print()
-        for chunk in response_chunks:
-            print(chunk, end="", flush=True)
-            full_response += chunk
-
-        print()
-
-
-def main():
-    trial01 = Constitutioner()
-    while True:
-        question = input("Enter your query: ")
-        if question.lower() in ["exit", "stop", "quit", "leave", "end", ""]:
-            print_header("Exiting Constitutioner")
-            break
-        if trial01.inference(question) is None:
-            print("Sorry, the Constitution does not contain relevant information about this query.")
-
-def print_banner():
-    print(r"""
-   _____                _   _ _         _   _                       
-  / ____|              | | (_) |       | | (_)                      
- | |     ___  _ __  ___| |_ _| |_ _   _| |_ _  ___  _ __   ___ _ __ 
- | |    / _ \| '_ \/ __| __| | __| | | | __| |/ _ \| '_ \ / _ \ '__|
- | |___| (_) | | | \__ \ |_| | |_| |_| | |_| | (_) | | | |  __/ |   
-  \_____\___/|_| |_|___/\__|_|\__|\__,_|\__|_|\___/|_| |_|\___|_|   
-                                                                    
-            🇮🇳  AI Assistant for the Indian Constitution 🇮🇳
-""")
-
-
-if __name__ == "__main__":
-    print_banner()
-    main()

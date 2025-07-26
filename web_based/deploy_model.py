@@ -2,6 +2,7 @@ from httpx import post
 import os
 from dotenv import load_dotenv
 from .infere import get_chunks
+import requests
 
 load_dotenv()
 
