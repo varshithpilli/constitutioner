@@ -1,7 +1,7 @@
 from httpx import post
 import os
 from dotenv import load_dotenv
-from web_based.infere import get_chunks
+from web_based.backend.infere import get_chunks
 import json
 import requests
 
