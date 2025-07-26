@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chatInput.value = "";
     const typingMsg = appendMessage("Typing...", "bot");
     try {
-      const response = await fetch("http://localhost:8000/ask", {
+      const response = await fetch("https://constitutioner.onrender.com/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: userMsg }),
