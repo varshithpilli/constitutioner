@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       typingMsg.querySelector(
         ".bot-text"
-      ).textContent = `Sorry, there was an error getting a response. ${err}`;
+      ).textContent = `Sorry, there was an error getting a response.`;
       const nextBtn = typingMsg.nextElementSibling;
       if (nextBtn && nextBtn.classList.contains("copy-btn-below")) {
         nextBtn.onclick = async () => {
