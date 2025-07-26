@@ -3,7 +3,6 @@ import time
 msg = input("Commit message: ")
 
 commands = [
-    "pip freeze > requirements.txt",
     "git add .",
     f'git commit -m "{msg}"',
     "git push origin master",
