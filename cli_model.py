@@ -2,6 +2,8 @@ from httpx import post
 import os
 from dotenv import load_dotenv
 from web_based.infere import get_chunks
+import json
+import requests
 
 load_dotenv()
 
@@ -94,29 +96,51 @@ class Constitutioner:
         payload = {
             "model": self.model,
             "messages": messages,
-            "max_tokens": 1500,
+            "stream": True
         }
 
-        try:
-            print_header("LLM CALL HAPPENING...")
-            response = post(self.base_url, json=payload, headers=headers)
-            response.raise_for_status()
-            result = response.json()
+        buffer = ""
+        with requests.post(self.base_url, headers=headers, json=payload, stream=True) as r:
+            for chunk in r.iter_content(chunk_size=1024, decode_unicode=True):
+                buffer += chunk
+                while True:
+                    line_end = buffer.find('\n')
+                    if line_end == -1:
+                        break
 
-            return result['choices'][0]['message']['content']
-        
-        except Exception as e:
-            print(f"api call failed mf: {e}")
-            return None
-        
+                    line = buffer[:line_end].strip()
+                    buffer = buffer[line_end + 1:]
+
+                    if line.startswith('data: '):
+                        data = line[6:]
+                        if data == '[DONE]':
+                            return
+
+                        try:
+                            data_obj = json.loads(data)
+                            content = data_obj["choices"][0]["delta"].get("content")
+                            if content:
+                                yield content
+                        except json.JSONDecodeError:
+                            pass
+
+            
     def inference(self, query):
         docs = get_chunks(query)
         messages = [
             {"role": "system", "content": self.system_prompt()},
             {"role": "user", "content": self.user_prompt(query, docs)}
         ]
-        response = self.api_call(messages)
-        return response
+        response_chunks = self.api_call(messages)
+
+        full_response = ""
+        print()
+        for chunk in response_chunks:
+            print(chunk, end="", flush=True)
+            full_response += chunk
+
+        print()
+
 
 def main():
     trial01 = Constitutioner()
@@ -125,8 +149,7 @@ def main():
         if question.lower() in ["exit", "stop", "quit", "leave", "end", ""]:
             print_header("Exiting Constitutioner")
             break
-        response = trial01.inference(question)
-        print(response)
+        trial01.inference(question)
 
 def print_banner():
     print(r"""

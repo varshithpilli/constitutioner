@@ -7,7 +7,6 @@ app = FastAPI()
 class QueryRequest(BaseModel):
     question: str
 
-# Initialize Constitutioner once
 engine = Constitutioner()
 
 @app.get("/")
