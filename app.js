@@ -1,18 +1,20 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const chatForm = document.getElementById('chatForm');
-  const chatInput = document.getElementById('chatInput');
-  const chatMessages = document.getElementById('chatMessages');
-  const chatMain = document.querySelector('.chat-main');
-  const sendBtn = chatForm.querySelector('button[type="submit"], .chat-send-btn');
+document.addEventListener("DOMContentLoaded", () => {
+  const chatForm = document.getElementById("chatForm");
+  const chatInput = document.getElementById("chatInput");
+  const chatMessages = document.getElementById("chatMessages");
+  const chatMain = document.querySelector(".chat-main");
+  const sendBtn = chatForm.querySelector(
+    'button[type="submit"], .chat-send-btn'
+  );
 
   let isProcessing = false;
 
   function setInputEnabled(enabled) {
     if (sendBtn) sendBtn.disabled = !enabled;
     if (!enabled) {
-      chatInput.placeholder = 'Send disabled...';
+      chatInput.placeholder = "Send disabled...";
     } else {
-      chatInput.placeholder = 'Type your query...';
+      chatInput.placeholder = "Type your query...";
     }
   }
 
@@ -20,84 +22,118 @@ document.addEventListener('DOMContentLoaded', () => {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-  function appendMessage(text, sender = 'user') {
-    const msgDiv = document.createElement('div');
+  function appendMessage(text, sender = "user") {
+    const msgDiv = document.createElement("div");
     msgDiv.className = `chat-message ${sender}`;
     msgDiv.textContent = text;
-    let copyBtn = null;
-    if (sender === 'bot') {
-      msgDiv.textContent = '';
-      const span = document.createElement('span');
+    let nextBtn = null;
+    if (sender === "bot") {
+      msgDiv.textContent = "";
+      const span = document.createElement("span");
       span.textContent = text;
-      span.className = 'bot-text';
+      span.className = "bot-text";
       msgDiv.appendChild(span);
       // Create copy button as a sibling below
-      copyBtn = document.createElement('button');
-      copyBtn.className = 'copy-btn-below';
-      copyBtn.textContent = '📋';
-      copyBtn.onclick = async () => {
+      nextBtn = document.createElement("button");
+      nextBtn.className = "copy-btn-below";
+      nextBtn.textContent = "📋";
+      nextBtn.onclick = async () => {
         try {
           await navigator.clipboard.writeText(text);
-          copyBtn.textContent = '✅';
-          setTimeout(() => { copyBtn.textContent = '📋'; }, 1200);
+          nextBtn.textContent = "✅";
+          setTimeout(() => {
+            nextBtn.textContent = "📋";
+          }, 1200);
         } catch {
-          copyBtn.textContent = '⚠️';
-          setTimeout(() => { copyBtn.textContent = '📋'; }, 1200);
+          nextBtn.textContent = "⚠️";
+          setTimeout(() => {
+            nextBtn.textContent = "📋";
+          }, 1200);
         }
       };
     }
     chatMessages.appendChild(msgDiv);
-    if (copyBtn) chatMessages.appendChild(copyBtn);
+    if (nextBtn) chatMessages.appendChild(nextBtn);
     scrollToBottom();
     return msgDiv;
   }
 
-  chatForm.addEventListener('submit', async (e) => {
+  chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (isProcessing) return;
     const userMsg = chatInput.value.trim();
     if (!userMsg) return;
     isProcessing = true;
     setInputEnabled(false);
-    appendMessage(userMsg, 'user');
-    chatInput.value = '';
-    const typingMsg = appendMessage('Typing...', 'bot');
+    appendMessage(userMsg, "user");
+    chatInput.value = "";
+    const typingMsg = appendMessage("Typing...", "bot");
     try {
-      const response = await fetch('http://localhost:8000/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: userMsg })
+      const response = await fetch("http://localhost:8000/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: userMsg }),
       });
-      if (!response.ok) throw new Error('API error');
-      const data = await response.json();
-      typingMsg.querySelector('.bot-text').textContent = data.answer || '[No answer returned]';
-      // Update the copy button to copy the new answer
+      if (!response.ok) throw new Error("API error");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+      let answer = "";
+
+      typingMsg.querySelector(".bot-text").textContent = "";
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          answer += chunk;
+          const newHTML = DOMPurify.sanitize(marked.parse(answer));
+          typingMsg.querySelector(".bot-text").innerHTML = newHTML;
+
+          scrollToBottom();
+        }
+      }
+
       const nextBtn = typingMsg.nextElementSibling;
-      if (nextBtn && nextBtn.classList.contains('copy-btn-below')) {
+      if (nextBtn && nextBtn.classList.contains("copy-btn-below")) {
         nextBtn.onclick = async () => {
           try {
-            await navigator.clipboard.writeText(data.answer || '[No answer returned]');
-            nextBtn.textContent = '✅';
-            setTimeout(() => { nextBtn.textContent = '📋'; }, 1200);
+            const textToCopy = typingMsg.querySelector(".bot-text").innerText;
+            await navigator.clipboard.writeText(textToCopy);
+            nextBtn.textContent = "✅";
+            setTimeout(() => {
+              nextBtn.textContent = "📋";
+            }, 1200);
           } catch {
-            nextBtn.textContent = '⚠️';
-            setTimeout(() => { nextBtn.textContent = '📋'; }, 1200);
+            nextBtn.textContent = "⚠️";
+            setTimeout(() => {
+              nextBtn.textContent = "📋";
+            }, 1200);
           }
         };
       }
       scrollToBottom();
     } catch (err) {
-      typingMsg.querySelector('.bot-text').textContent = 'Sorry, there was an error getting a response.';
+      typingMsg.querySelector(
+        ".bot-text"
+      ).textContent = `Sorry, there was an error getting a response. ${err}`;
       const nextBtn = typingMsg.nextElementSibling;
-      if (nextBtn && nextBtn.classList.contains('copy-btn-below')) {
+      if (nextBtn && nextBtn.classList.contains("copy-btn-below")) {
         nextBtn.onclick = async () => {
           try {
-            await navigator.clipboard.writeText('Sorry, there was an error getting a response.');
-            nextBtn.textContent = '✅';
-            setTimeout(() => { nextBtn.textContent = '📋'; }, 1200);
+            const textToCopy = typingMsg.querySelector(".bot-text").innerText;
+            await navigator.clipboard.writeText(textToCopy);
+            nextBtn.textContent = "✅";
+            setTimeout(() => {
+              nextBtn.textContent = "📋";
+            }, 1200);
           } catch {
-            nextBtn.textContent = '⚠️';
-            setTimeout(() => { nextBtn.textContent = '📋'; }, 1200);
+            nextBtn.textContent = "⚠️";
+            setTimeout(() => {
+              nextBtn.textContent = "📋";
+            }, 1200);
           }
         };
       }
