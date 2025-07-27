@@ -57,10 +57,13 @@ Constitutioner shows how **RAG + Pinecone** can be used to build **lightweight, 
 ## Screenshots
 
 CLI Version
+
 <img src="./imgs/cli.png" width="800">
 
 Desktop Version
+
 <img src="./imgs/laptop.png" width="800">
 
 Mobile Version
-<img src="./imgs/mobile.png" width="800">
+
+<img src="./imgs/mobile.png" width="400">
