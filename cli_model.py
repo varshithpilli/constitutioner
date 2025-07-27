@@ -126,6 +126,7 @@ class Constitutioner:
 
             
     def inference(self, query):
+        print()
         docs = get_chunks(query)
         if docs is None:
             return None
@@ -136,12 +137,12 @@ class Constitutioner:
         response_chunks = self.api_call(messages)
 
         full_response = ""
-        print()
         for chunk in response_chunks:
             print(chunk, end="", flush=True)
             full_response += chunk
 
         print()
+        return full_response
 
 
 def main():
@@ -151,8 +152,12 @@ def main():
         if question.lower() in ["exit", "stop", "quit", "leave", "end", ""]:
             print_header("Exiting Constitutioner")
             break
-        if trial01.inference(question) is None:
+        response = trial01.inference(question)
+        
+        if not response:
             print("Sorry, the Constitution does not contain relevant information about this query.")
+        else:
+            print(response)
 
 def print_banner():
     print(r"""

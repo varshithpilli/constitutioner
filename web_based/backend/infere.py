@@ -1,29 +1,28 @@
 from pinecone import Pinecone
-from sentence_transformers import SentenceTransformer
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 PINECONE_API = os.getenv("PINECONE_API")
-PINECONE_HOST = os.getenv("PINECONE_HOST")
-
-embedder = SentenceTransformer('all-MiniLM-L6-v2')
 
 pc = Pinecone(api_key=PINECONE_API)
-index = pc.Index(host=PINECONE_HOST)
+index = pc.Index("trial01")
 
 def get_chunks(query, top_k=5):
-    
-    query_embedding = embedder.encode(query).tolist()
-
-    results = index.query(
-        vector=query_embedding,
-        top_k=top_k,
-        include_metadata=True
+    results = index.search(
+        namespace="trial01", 
+        query={
+            "inputs": {"text": f"{query}"}, 
+            "top_k": top_k
+        },
+        fields=["chunk_text"]
     )
-    relevent_chunks = []
-    for i in range(len(results['matches'])):
-        relevent_chunks.append(results['matches'][i]['metadata']['chunk_text'])
     
-    return relevent_chunks
+    final = [
+        hit["fields"].get("chunk_text", "") for hit in results["result"]["hits"]
+    ]
+    
+    if len(final) == 0:
+        return None
+    return final 
