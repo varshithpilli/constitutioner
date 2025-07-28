@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ question: userMsg }),
       });
       if (!response.ok) throw new Error("API error");
-
+      
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
       let done = false;
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       typingMsg.querySelector(
         ".bot-text"
-      ).textContent = `Sorry, there was an error getting a response.`;
+      ).textContent = `Sorry, there was an error getting a response. ${err}`;
       const nextBtn = typingMsg.nextElementSibling;
       if (nextBtn && nextBtn.classList.contains("copy-btn-below")) {
         nextBtn.onclick = async () => {
