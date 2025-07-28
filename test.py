@@ -16,7 +16,7 @@ payload = {
     ]
 }
 headers = {
-    "Authorization": "Bearer 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",
+    "Authorization": "Bearer lol",
     "Content-Type": "application/json"
 }
 
