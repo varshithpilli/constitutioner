@@ -1,7 +1,7 @@
 from httpx import post
 import os
 from dotenv import load_dotenv
-from infere import get_chunks
+from .infere import get_chunks
 import requests
 import json
 
@@ -116,7 +116,7 @@ class Constitutioner:
                             if content:
                                 yield content
                         except json.JSONDecodeError:
-                            pass        
+                            pass      
                         
     def inference(self, query):
         docs = get_chunks(query)
