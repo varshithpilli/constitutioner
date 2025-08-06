@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
-from deploy_model import Constitutioner
+from .deploy_model import Constitutioner
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -38,3 +38,5 @@ async def ask_constitution(req: QueryRequest):
             yield b"\n[Error occurred while streaming response]"
 
     return StreamingResponse(iter_response(), media_type="text/plain")
+    
+    # return answer_generator

@@ -1,7 +1,7 @@
-from httpx import post
+import httpx
 import os
 from dotenv import load_dotenv
-from infere import get_chunks
+from .infere import get_chunks
 import requests
 import json
 
@@ -117,6 +117,14 @@ class Constitutioner:
                                 yield content
                         except json.JSONDecodeError:
                             pass      
+        
+        # response = httpx.post(self.base_url, json=payload, headers=headers, timeout=20.0)
+        # response.raise_for_status()
+        # result = response.json()
+        # print("Status Code:", response.status_code)
+        # print("Response Text:", response.text)
+
+        # return result['choices'][0]['message']['content']
                         
     def inference(self, query):
         docs = get_chunks(query)
@@ -127,3 +135,4 @@ class Constitutioner:
             {"role": "user", "content": self.user_prompt(query, docs)}
         ]
         yield from self.api_call(messages)
+        # return self.api_call(messages)
