@@ -111,7 +111,6 @@ body::-webkit-scrollbar {
     font-size: 1rem;
     line-height: 1.5;
     word-break: break-word;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .chat-message.user {
