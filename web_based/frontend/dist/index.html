@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Constitutioner</title>
+  <link rel="shortcut icon" href="/assets/apple-touch-icon-DMc29xSZ.png" type="image/x-icon">
+  <link rel="stylesheet" crossorigin href="/assets/index-CyP8FvsJ.css">
+</head>
+<body>
+  <div class="chat-container">
+    <header class="chat-header">
+      <h1>Welcome to Constitutioner</h1>
+      <p class="subtitle">A chatbot to remind you of your rights</p>
+    </header>
+    <main class="chat-main">
+      <div class="chat-messages" id="chatMessages"></div>
+    </main>
+    <form class="chat-input-area" id="chatForm">
+      <input type="text" id="chatInput" class="chat-input" placeholder="Type your query..." autocomplete="off" required />
+      <button type="submit" class="chat-send-btn">➜</button>
+    </form>
+    <div class="garbage"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+  <script type="text/javascript" src="dist/purify.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
