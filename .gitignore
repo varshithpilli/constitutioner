@@ -6,3 +6,4 @@ quick.py
 temp.py
 */*.pyc
 quick.py
+/web_based/frontend/node_modules/
