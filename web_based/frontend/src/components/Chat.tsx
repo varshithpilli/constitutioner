@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import MessageBubble from '../components/MessageBubble'
 import ChatInput from '../components/ChatInput'
 import { Spinner } from "./ui/spinner"
@@ -17,6 +17,16 @@ export default function Chat({ onFirstMessage, hasStarted }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, isLoading])
 
   const handleSendMessage = async (message: string) => {
     if (!hasStarted) {
@@ -70,11 +80,7 @@ export default function Chat({ onFirstMessage, hasStarted }: ChatProps) {
           Constitutioner
         </h1>
       )}
-      <div className={`transition-all duration-500 ease-in-out ${
-        hasStarted 
-          ? "flex-1 overflow-y-auto space-y-4 p-4" 
-          : "hidden"
-      }`}>
+      <div ref={chatContainerRef} className="flex flex-col overflow-y-auto space-y-4 p-4">
         {messages.map((message, index) => (
           <MessageBubble key={index} message={message} />
         ))}
@@ -84,11 +90,12 @@ export default function Chat({ onFirstMessage, hasStarted }: ChatProps) {
             <span className="text-sm">AI is thinking...</span>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
       <div className={`transition-all duration-500 ease-in-out ${
         hasStarted ? "" : "w-[600px]"
-      }`}>
-        <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
+      }`} >
+        <ChatInput onSend={handleSendMessage} disabled={isStreaming || isLoading} />
       </div>
     </div>
   )
