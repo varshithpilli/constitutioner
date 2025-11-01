@@ -62,8 +62,8 @@ CLI Version
 
 Desktop Version
 
-<img src="./imgs/laptop.png" width="800">
+<img src="./imgs/laptop_1.png" width="800">
 
 Mobile Version
 
-<img src="./imgs/mobile.png" width="400">
+<img src="./imgs/mobile_1.png" width="400">

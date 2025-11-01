@@ -5,6 +5,6 @@ anaconda_projects/*
 quick.py
 temp.py
 */*.pyc
-quick.py
 /web_based/frontend/node_modules/
 **/node_modules/**
+**/venv/**
