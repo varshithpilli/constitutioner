@@ -8,6 +8,7 @@ export default function App() {
 
   const handleFirstMessage = (message: string) => {
     setHasStarted(true)
+    console.log(message);
   }
 
   return (
