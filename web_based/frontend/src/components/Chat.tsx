@@ -36,7 +36,7 @@ export default function Chat({ onFirstMessage, hasStarted }: ChatProps) {
     setIsStreaming(true)
 
     try {
-      const response = await fetch('https://constitutioner.onrender.com/ask', {
+      const response = await fetch('https://constitutioner-1.onrender.com/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: message })
