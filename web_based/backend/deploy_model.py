@@ -87,16 +87,17 @@ class Constitutioner:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
-        payload = {
+        payload = json.dumps({
             "model": self.model,
             "messages": messages,
             "stream": True
-        }
+        })
 
         buffer = ""
-        with requests.post(self.base_url, headers=headers, json=payload, stream=True) as r:
+        with requests.post(url=self.base_url, headers=headers, data=payload, stream=True) as r:
             for chunk in r.iter_content(chunk_size=1024, decode_unicode=True):
                 buffer += chunk
+                print(chunk)
                 while True:
                     line_end = buffer.find('\n')
                     if line_end == -1:
@@ -119,20 +120,25 @@ class Constitutioner:
                             pass      
         
         # response = httpx.post(self.base_url, json=payload, headers=headers, timeout=20.0)
+        # print(response)
         # response.raise_for_status()
         # result = response.json()
         # print("Status Code:", response.status_code)
         # print("Response Text:", response.text)
 
-        # return result['choices'][0]['message']['content']
+        return result['choices'][0]['message']['content']
                         
     def inference(self, query):
         docs = get_chunks(query)
         if docs is None:
             return None
+        
+        # print(docs)
+        
         messages = [
             {"role": "system", "content": self.system_prompt()},
             {"role": "user", "content": self.user_prompt(query, docs)}
         ]
+        
         yield from self.api_call(messages)
         # return self.api_call(messages)
