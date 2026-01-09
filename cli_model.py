@@ -93,14 +93,14 @@ class Constitutioner:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
-        payload = {
+        payload = json.dumps({
             "model": self.model,
             "messages": messages,
             "stream": True
-        }
+        })
 
         buffer = ""
-        with requests.post(self.base_url, headers=headers, json=payload, stream=True) as r:
+        with requests.post(url=self.base_url, headers=headers, data=payload, stream=True) as r:
             for chunk in r.iter_content(chunk_size=1024, decode_unicode=True):
                 buffer += chunk
                 while True:
@@ -123,7 +123,9 @@ class Constitutioner:
                                 yield content
                         except json.JSONDecodeError:
                             pass
-
+        
+        return result['choices'][0]['message']['content']
+        
             
     def inference(self, query):
         print()
