@@ -8,3 +8,4 @@ temp.py
 /web_based/frontend/node_modules/
 **/node_modules/**
 **/venv/**
+**/venv_g/**
