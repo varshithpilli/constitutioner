@@ -1,3 +1,9 @@
-./venv/Scripts/activate
+# global venv for the cli
+./venv_g/Scripts/activate
+
+# venv for the backend
+./web_based/backend/venv/Scripts/activate
 
 npx http-server ./dist -p 8080
+
+pip freeze > requirements.txt
